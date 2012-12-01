@@ -1,6 +1,6 @@
 (ns hirop-compojure.core
   (:use compojure.core
-        hirop.session-frontend
+        hirop.stateful
         [ring.util.response :only [response redirect status]]))
 
 ;; TODO: extend to multiple concurrent contexts
