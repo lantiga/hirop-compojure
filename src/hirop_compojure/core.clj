@@ -7,7 +7,7 @@
 
 ;; TODO: make a couch embedded backend
 
-(defmacro hirop-routes-with-context
+(defmacro hirop-routes-with-prefix
   [prefix]
   `(context ~prefix [] hirop-routes))
 
@@ -19,60 +19,62 @@
        (response (doctypes)))
   (GET "/contexts" []
        (response (contexts)))
-  (POST "/clean-context" []
-        (clean-context))
-  (POST "/init-context" {{context-name :name external-ids :external-ids meta :meta} :params}
-        (init-context context-name external-ids meta))
+  (POST "/clean-contexts" []
+        (clean-contexts))
+  (POST "/clean-context" {{context-id :context-id} :params}
+        (clean-context :context-id context-id))
+  (POST "/create-context" {{context-name :name external-ids :external-ids meta :meta context-id :context-id} :params}
+        (create-context context-name external-ids meta :context-id context-id))
   ;; TODO: if selection-id in params, then fill document with currently selected relations
-  (GET "/new-document" {{doctype :doctype} :params}
-       (response (new-document doctype)))
+  (GET "/new-document" {{doctype :doctype context-id :context-id} :params}
+       (response (new-document doctype :context-id context-id)))
   ;; TODO: if selection-id in params, then fill documents with currently selected relations
-  (GET "/new-documents" {{doctype-map :doctype-map} :params}
-       (response (new-documents doctype-map)))
-  (GET "/get-document" {{id :id} :params}
-       (response (get-document id)))
-  (GET "/get-external-documents" []
-       (vec-response (get-external-documents)))
-  (GET "/get-configurations" []
-       (response (get-configurations)))
-  (GET "/get-configuration" {{doctype :doctype} :params}
-       (response (get-configuration doctype)))
-  (GET "/get-doctype" {{doctype :doctype} :params}
-       (response (get-doctype doctype)))
-  (GET "/get-baseline" {{id :id} :params}
-       (response (get-baseline id)))
-  (POST "/commit" {{document :document} :params}
-        (commit document))
-  (POST "/mcommit" {{documents :documents} :params}
-        (mcommit documents))
-  (POST "/pull" []
-        (response (pull)))
-  (GET "/get-conflicted-ids" []
-       (vec-response (get-conflicted-ids)))
-  (GET "/any-conflicted" []
-       (response (any-conflicted)))
-  (GET "/checkout-conflicted" []
-       (response (checkout-conflicted)))
-  (POST "/push" []
-        (response (push)))
-  (POST "/save" {{documents :documents} :params}
-        (response (save)))
-  (GET "/history" {{id :id} :params}
-       (vec-response (history id)))
-  (GET "/checkout" {{doctype :doctype} :params}
+  (GET "/new-documents" {{doctype-map :doctype-map context-id :context-id} :params}
+       (response (new-documents doctype-map :context-id context-id)))
+  (GET "/get-document" {{id :id context-id :context-id} :params}
+       (response (get-document id :context-id context-id)))
+  (GET "/get-external-documents" {{context-id :context-id} :params}
+       (vec-response (get-external-documents :context-id context-id)))
+  (GET "/get-configurations" {{context-id :context-id} :params}
+       (response (get-configurations :context-id context-id)))
+  (GET "/get-configuration" {{doctype :doctype context-id :context-id} :params}
+       (response (get-configuration doctype :context-id context-id)))
+  (GET "/get-doctype" {{doctype :doctype context-id :context-id} :params}
+       (response (get-doctype doctype :context-id context-id)))
+  (GET "/get-baseline" {{id :id context-id :context-id} :params}
+       (response (get-baseline id :context-id context-id)))
+  (POST "/commit" {{document :document context-id :context-id} :params}
+        (commit document :context-id context-id))
+  (POST "/mcommit" {{documents :documents context-id :context-id} :params}
+        (mcommit documents :context-id context-id))
+  (POST "/pull" {{context-id :context-id} :params}
+        (response (pull :context-id context-id)))
+  (GET "/get-conflicted-ids" {{context-id :context-id} :params}
+       (vec-response (get-conflicted-ids :context-id context-id)))
+  (GET "/any-conflicted" {{context-id :context-id} :params}
+       (response (any-conflicted :context-id context-id)))
+  (GET "/checkout-conflicted" {{context-id :context-id} :params}
+       (response (checkout-conflicted :context-id context-id)))
+  (POST "/push" {{context-id :context-id} :params}
+        (response (push :context-id context-id)))
+  (POST "/save" {{documents :documents context-id :context-id} :params}
+        (response (save :context-id context-id)))
+  (GET "/history" {{id :id context-id :context-id} :params}
+       (vec-response (history id :context-id context-id)))
+  (GET "/checkout" {{doctype :doctype context-id :context-id} :params}
        (if doctype
-         (vec-response (checkout doctype))
-         (response (checkout))))
-  (GET "/get-selected-ids" {{selection-id :selection-id doctype :doctype} :params}
+         (vec-response (checkout :doctype doctype :context-id context-id))
+         (response (checkout :context-id context-id))))
+  (GET "/get-selected-ids" {{selection-id :selection-id doctype :doctype context-id :context-id} :params}
        (if doctype
-         (vec-response (get-selected-ids selection-id doctype))
-         (response (get-selected-ids selection-id))))
-  (GET "/checkout-selected" {{doctype :doctype selection-id :selection-id} :params}
+         (vec-response (get-selected-ids :selection-id selection-id :doctype doctype :context-id context-id))
+         (response (get-selected-ids :selection-id selection-id :context-id context-id))))
+  (GET "/checkout-selected" {{doctype :doctype selection-id :selection-id context-id :context-id} :params}
        (if doctype
-         (vec-response (checkout-selected selection-id doctype))
-         (response (checkout-selected selection-id))))
-  (POST "/select" {{id :id selection-id :selection-id} :params}
-        (vec-response (select selection-id id)))
-  (POST "/unselect" {{selection-id :selection-id doctype :doctype} :params}
-        (vec-response (unselect selection-id doctype))))
+         (vec-response (checkout-selected :selection-id selection-id :doctype doctype :context-id context-id))
+         (response (checkout-selected :selection-id selection-id :context-id context-id))))
+  (POST "/select" {{id :id selection-id :selection-id context-id :context-id} :params}
+        (vec-response (select :selection-id selection-id :id id :context-id context-id)))
+  (POST "/unselect" {{selection-id :selection-id doctype :doctype context-id :context-id} :params}
+        (vec-response (unselect :selection-id selection-id :doctype doctype :context-id context-id))))
 
