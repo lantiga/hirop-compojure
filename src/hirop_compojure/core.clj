@@ -20,11 +20,11 @@
   (GET "/contexts" []
        (response (contexts)))
   (POST "/clean-contexts" []
-        (clean-contexts))
+        (response (clean-contexts)))
   (POST "/clean-context" {{context-id :context-id} :params}
-        (clean-context :context-id context-id))
+        (response (clean-context :context-id context-id)))
   (POST "/create-context" {{context-name :name external-ids :external-ids meta :meta context-id :context-id} :params}
-        (create-context context-name external-ids meta :context-id context-id))
+        (response (create-context context-name external-ids meta :context-id context-id)))
   ;; TODO: if selection-id in params, then fill document with currently selected relations
   (GET "/new-document" {{doctype :doctype context-id :context-id} :params}
        (response (new-document doctype :context-id context-id)))
@@ -44,9 +44,9 @@
   (GET "/get-baseline" {{id :id context-id :context-id} :params}
        (response (get-baseline id :context-id context-id)))
   (POST "/commit" {{document :document context-id :context-id} :params}
-        (commit document :context-id context-id))
+        (response (commit document :context-id context-id)))
   (POST "/mcommit" {{documents :documents context-id :context-id} :params}
-        (mcommit documents :context-id context-id))
+        (response (mcommit documents :context-id context-id)))
   (POST "/pull" {{context-id :context-id} :params}
         (response (pull :context-id context-id)))
   (GET "/get-conflicted-ids" {{context-id :context-id} :params}
