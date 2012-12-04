@@ -3,10 +3,6 @@
         hirop.stateful
         [ring.util.response :only [response redirect status]]))
 
-;; TODO: extend to multiple concurrent contexts
-
-;; TODO: make a couch embedded backend
-
 (defmacro hirop-routes-with-prefix
   [prefix]
   `(context ~prefix [] hirop-routes))
