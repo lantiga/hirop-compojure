@@ -1,13 +1,9 @@
 # hirop-compojure
 
-A Clojure library designed to ... well, that part is up to you.
-
-## Usage
-
-FIXME
+Compojure frontend for [hirop](https://github.com/orobix/hirop). Alpha stage, expect a stable release by the end of 2012.
 
 ## License
 
-Copyright © 2012 FIXME
+Copyright © 2012 Orobix Srl
 
 Distributed under the Eclipse Public License, the same as Clojure.
