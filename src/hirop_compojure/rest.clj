@@ -182,14 +182,6 @@
 ;; Use HTTP response codes, e.g. 409 Conflict, 404 Not Found, 403 Permission Denied
 ;; Use headers for return error messages, in Status Text or Warning header (actually not mandatory)
 
-;; Actually, using a REST representation and a Redis backend, we may not need
-;; the stateful stuff after all and the Redis atom thing; just assign Redis keys
-;; with :context-id as a prefix and use the purely functional layer
-;; (probably not directly, thin layer to only get the right portion of store
-;; from Redis and not the whole store at every step).
-
-  ;; The API moves away from the git semantics, but this could be easily recovered in the client libraries.
-
 ;;  (defn- change-selection [context-id selection-id session-updater]
 ;;  (let [old-selection (get-in (session/get-in [:store context-id]) [:selections (keyword selection-id)])
 ;;        session (session/update! session-updater)
