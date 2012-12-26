@@ -32,7 +32,7 @@
            
            (POST "/remotes" [:as req]
                  (let [context (get-context (get-store req) context-id)
-                       save-info (push-save context (partial backend/save (get context :backend)))]
+                       save-info (when context (push-save context (partial backend/save (get context :backend))))]
                    (->>
                     (update-context (get-store req) context-id
                                     #(push-post-save % save-info))
