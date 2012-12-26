@@ -36,7 +36,6 @@
                    (->>
                     (update-context (get-store req) context-id
                                     #(push-post-save % save-info))
-                    ((fn [c] (prn "C" c) (prn (get-push-result c)) c))
                     get-push-result
                     (assoc {} :result)
                     response)))
