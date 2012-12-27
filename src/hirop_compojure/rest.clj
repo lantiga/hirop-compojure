@@ -5,6 +5,11 @@
         [ring.util.response :only [response status]])
   (:require [hirop.backend :as backend]))
 
+(def ^:dynamic *doctypes*)
+(def ^:dynamic *contexts*)
+(def ^:dynamic *meta*)
+(def ^:dynamic *backend*)
+
 (defn- get-store [req]
   (get-in req [:hirop :store]))
 
@@ -13,14 +18,9 @@
   (POST "/contexts" [:as req]
         (let [context-name (keyword (get-in req [:params :context-name]))
               external-ids (get-in req [:params :external-ids])
-              ;; FIXME: requiring session is not ideal. These info shouldn't stay in session.
-              context (get-in req [:session :hirop :contexts context-name])
-              doctypes (get-in req [:session :hirop :doctypes])
-              meta (get-in req [:session :hirop :meta])
-              backend (get-in req [:session :hirop :backend])
               context-id
               (put-context (get-store req)
-                           (create-context context-name context doctypes external-ids meta backend))]
+                           (create-context context-name (get *contexts* context-name) *doctypes* external-ids *meta* *backend*))]
           (response {:context-id context-id})))
 
   (context "/contexts/:context-id" [context-id]
