@@ -16,8 +16,6 @@
         (let [context-name (keyword (get-in req [:params :context-name]))
               external-ids (get-in req [:params :external-ids])
               {contexts :contexts doctypes :doctypes meta :meta backend :backend} (*get-hirop-conf*)
-              ;; TODO: probably worth to call (init-database backend), and make init-database a multimethod.
-              ;; Alternatively, have a managing application do it (on a per-app basis)
               context-id
               (put-context (get-store req)
                            (init-context context-name (get contexts context-name) doctypes external-ids meta backend))]
