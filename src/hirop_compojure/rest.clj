@@ -20,7 +20,7 @@
               ;; Alternatively, have a managing application do it (on a per-app basis)
               context-id
               (put-context (get-store req)
-                           (create-context context-name (get contexts context-name) doctypes external-ids meta backend))]
+                           (init-context context-name (get contexts context-name) doctypes external-ids meta backend))]
           (response {:context-id context-id})))
 
   (context "/contexts/:context-id" [context-id]
