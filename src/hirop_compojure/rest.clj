@@ -5,10 +5,7 @@
         [ring.util.response :only [response status]])
   (:require [hirop.backend :as backend]))
 
-(def ^:dynamic *doctypes*)
-(def ^:dynamic *contexts*)
-(def ^:dynamic *meta*)
-(def ^:dynamic *backend*)
+(def ^:dynamic *get-hirop-conf*)
 
 (defn- get-store [req]
   (get-in req [:hirop :store]))
@@ -18,9 +15,12 @@
   (POST "/contexts" [:as req]
         (let [context-name (keyword (get-in req [:params :context-name]))
               external-ids (get-in req [:params :external-ids])
+              {contexts :contexts doctypes :doctypes meta :meta backend :backend} (*get-hirop-conf*)
+              ;; TODO: probably worth to call (init-database backend), and make init-database a multimethod.
+              ;; Alternatively, have a managing application do it (on a per-app basis)
               context-id
               (put-context (get-store req)
-                           (create-context context-name (get *contexts* context-name) *doctypes* external-ids *meta* *backend*))]
+                           (create-context context-name (get contexts context-name) doctypes external-ids meta backend))]
           (response {:context-id context-id})))
 
   (context "/contexts/:context-id" [context-id]
@@ -30,9 +30,11 @@
                     (delete-context (get-store req) context-id)
                     response))
            
-           (POST "/remotes" [:as req]
+           (POST "/push" [:as req]
                  (let [context (get-context (get-store req) context-id)
-                       save-info (when context (push-save context (partial backend/save (get context :backend))))]
+                       save-info
+                       (when context
+                         (push-save context (partial backend/save (get context :backend))))]
                    (->>
                     (update-context (get-store req) context-id
                                     #(push-post-save % save-info))
@@ -40,7 +42,7 @@
                     (assoc {} :result)
                     response)))
 
-           (POST "/locals" [:as req]
+           (POST "/pull" [:as req]
                  (let [context
                        (update-context (get-store req) context-id
                                        #(pull % (partial backend/fetch (get % :backend))))]
@@ -171,11 +173,6 @@
                             (response nil)))
 
            ))
-
-
-;; Expiral
-;; http://kotka.de/blog/2010/03/memoize_done_right.html
-;; https://github.com/clojure/core.cache
 
 ;; all GET's have Expires: 0 or Cache-Control: no-cache in the header (except configurations, external-documents and doctype)
 
