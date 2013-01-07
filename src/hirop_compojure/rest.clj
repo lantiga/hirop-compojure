@@ -148,26 +148,30 @@
                     (GET "/" [:as req]
                          (->
                           (get-context (get-store req) context-id)
-                          (checkout-selected selection-id)
+                          (checkout-selected (keyword selection-id))
                           vec
                           response))
 
                     (GET "/:doctype" [doctype :as req]
                          (->
                           (get-context (get-store req) context-id)
-                          (checkout-selected selection-id (keyword doctype))
+                          (checkout-selected (keyword selection-id) (keyword doctype))
                           vec
                           response))
 
                     ;; TODO: check about the selection change function,
                     ;; eventually move it to core and call it from here
+
+                    (POST "/" [:as req]
+                         (update-context (get-store req) context-id #(select-defaults % (keyword selection-id)))
+                         (response nil))
                     
                     (POST "/:doc-id" [doc-id :as req]
-                         (update-context (get-store req) context-id #(select-document % doc-id selection-id))
+                         (update-context (get-store req) context-id #(select-document % doc-id (keyword selection-id)))
                          (response nil))
 
                     (DELETE "/:doctype" [doctype :as req]
-                            (update-context (get-store req) context-id #(unselect % selection-id (keyword doctype)))
+                            (update-context (get-store req) context-id #(unselect % (keyword selection-id) (keyword doctype)))
                             (response nil)))
 
            ))
