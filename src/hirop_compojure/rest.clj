@@ -115,6 +115,14 @@
                  checkout-conflicted
                  response))
 
+           (POST "/conflicted" [:as req]
+                 (let [doc (get-in req [:params :document])
+                       docs (get-in req [:params :documents])]
+                   (cond
+                    doc (do (update-context (get-store req) context-id #(commit-conflicted % doc)) (response "1"))
+                    docs (do (update-context (get-store req) context-id #(mcommit-conflicted % docs)) (response (str (count docs))))
+                    :else (response nil))))
+
            (GET "/documents/new/:doctype" [doctype :as req]
                 (->
                  (get-context (get-store req) context-id)
