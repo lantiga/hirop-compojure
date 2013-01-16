@@ -174,8 +174,12 @@
                           vec
                           response))
 
-                    GET "/ids/:doctype" [doctype :as req]
-
+                    (GET "/ids/:doctype" [doctype :as req]
+                         (->
+                          (get-context (get-store req) context-id)
+                          (get-selected-ids (keyword selection-id) (keyword doctype))
+                          vec
+                          response))
 
                     ;; TODO: check about the selection change function,
                     ;; eventually move it to core and call it from here
