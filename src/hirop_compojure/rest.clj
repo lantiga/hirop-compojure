@@ -141,7 +141,6 @@
                 (->
                  (get-context (get-store req) context-id)
                  checkout
-                 vec
                  response))
 
            (GET "/documents/:doctype" [doctype :as req]
@@ -157,7 +156,6 @@
                          (->
                           (get-context (get-store req) context-id)
                           (checkout-selected (keyword selection-id))
-                          vec
                           response))
 
                     (GET "/documents/:doctype" [doctype :as req]
@@ -171,7 +169,6 @@
                          (->
                           (get-context (get-store req) context-id)
                           (get-selected-ids (keyword selection-id))
-                          vec
                           response))
 
                     (GET "/ids/:doctype" [doctype :as req]
