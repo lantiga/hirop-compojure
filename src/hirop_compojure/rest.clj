@@ -141,6 +141,7 @@
                 (->
                  (get-context (get-store req) context-id)
                  checkout
+                 vec
                  response))
 
            (GET "/documents/:doctype" [doctype :as req]
