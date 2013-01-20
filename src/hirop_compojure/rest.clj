@@ -12,7 +12,7 @@
 
 (defroutes hirop-routes
 
-  (POST "/contexts" [:as req]
+  (POST "/contexts" req
         (let [context-name (keyword (get-in req [:params :context-name]))
               external-ids (get-in req [:params :external-ids])
               {contexts :contexts doctypes :doctypes meta :meta backend :backend} (*get-hirop-conf*)
@@ -23,12 +23,12 @@
 
   (context "/contexts/:context-id" [context-id]
 
-           (DELETE "/" [:as req]
+           (DELETE "/" req
                    (->
                     (delete-context (get-store req) context-id)
                     response))
 
-           (POST "/push" [:as req]
+           (POST "/push" req
                  (let [context (get-context (get-store req) context-id)
                        save-info
                        (when context
@@ -40,7 +40,7 @@
                     (assoc {} :result)
                     response)))
 
-           (POST "/pull" [:as req]
+           (POST "/pull" req
                  (let [context
                        (update-context (get-store req) context-id
                                        #(pull % (partial backend/fetch (get % :backend))))]
@@ -48,13 +48,13 @@
                     {:result (if (any-conflicted? context) :conflict :success)}
                     response)))
 
-           (GET "/external" [:as req]
+           (GET "/external" req
                 (->
                  (get-context (get-store req) context-id)
                  (get :external-ids)
                  response))
 
-           (GET "/configurations" [:as req]
+           (GET "/configurations" req
                 (->
                  (get-context (get-store req) context-id)
                  (get :configurations)
@@ -66,7 +66,7 @@
                  (get-in [:configurations (keyword doctype)])
                  response))
 
-           (GET "/doctypes" [:as req]
+           (GET "/doctypes" req
                 (->
                  (get-context (get-store req) context-id)
                  (get :doctypes)
@@ -103,19 +103,19 @@
                    vec
                    response)))
 
-           (HEAD "/conflicted" [:as req]
+           (HEAD "/conflicted" req
                  (let [context (get-context (get-store req) context-id)]
                    (if (any-conflicted? context)
                      (response nil)
                      (-> (response nil) (status 404)))))
 
-           (GET "/conflicted" [:as req]
+           (GET "/conflicted" req
                 (->
                  (get-context (get-store req) context-id)
                  checkout-conflicted
                  response))
 
-           (POST "/conflicted" [:as req]
+           (POST "/conflicted" req
                  (let [doc (get-in req [:params :document])
                        docs (get-in req [:params :documents])]
                    (cond
@@ -129,7 +129,7 @@
                  (new-document (keyword doctype))
                  response))
 
-           (POST "/documents" [:as req]
+           (POST "/documents" req
                  (let [doc (get-in req [:params :document])
                        docs (get-in req [:params :documents])]
                    (cond
@@ -137,7 +137,7 @@
                     docs (do (update-context (get-store req) context-id #(mcommit % docs)) (response (str (count docs))))
                     :else (response nil))))
 
-           (GET "/documents" [:as req]
+           (GET "/documents" req
                 (->
                  (get-context (get-store req) context-id)
                  checkout
@@ -153,7 +153,7 @@
 
            (context "/selected/:selection-id" [selection-id]
 
-                    (GET "/documents" [:as req]
+                    (GET "/documents" req
                          (->
                           (get-context (get-store req) context-id)
                           (checkout-selected (keyword selection-id))
@@ -166,7 +166,7 @@
                           vec
                           response))
 
-                    (GET "/ids" [:as req]
+                    (GET "/ids" req
                          (->
                           (get-context (get-store req) context-id)
                           (get-selected-ids (keyword selection-id))
@@ -182,7 +182,7 @@
                     ;; TODO: check about the selection change function,
                     ;; eventually move it to core and call it from here
 
-                    (POST "/" [:as req]
+                    (POST "/" req
                          (update-context (get-store req) context-id #(select-defaults % (keyword selection-id)))
                          (response nil))
 
