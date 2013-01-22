@@ -23,23 +23,6 @@
 
   (context "/contexts/:context-id" [context-id]
 
-           #_(ANY "/commands" req
-                (let [commands [{:method :get :uri "/documents"}] #_(get-in req [:json-params])
-                      uri-prefix (str "/contexts/" context-id)]
-                   (response (vec (map
-                                    (fn [command]
-                                      (hirop-routes
-                                       {:server-port 3000
-                                        :server-name "127.0.0.1"
-                                        :remote-addr "127.0.0.1"
-                                        :uri (str uri-prefix (:uri command))
-                                        :scheme :http
-                                        :headers {}
-                                        :request-method (keyword (:method command))}
-                                       );; use ring mock to build requests
-                                      )
-                                    commands)))))
-
            (DELETE "/" req
                    (->
                     (delete-context (get-store req) context-id)
@@ -209,9 +192,26 @@
 
                     (DELETE "/:doctype" [doctype :as req]
                             (update-context (get-store req) context-id #(unselect % (keyword selection-id) (keyword doctype)))
-                            (response nil)))
+                            (response nil)))))
 
-           ))
+
+(defroutes commands-route
+  (context "/contexts/:context-id" [context-id]
+   (POST "/commands" req
+        (let [commands (get-in req [:json-params])
+              uri-prefix (str "/contexts/" context-id)]
+          (response
+           (vec (map
+                 (fn [[method uri params]]
+                   (let [params-key (if (= :get (keyword method))
+                                      :query-params :json-params)]
+                     (hirop-routes
+                      (merge req
+                             {:uri (str uri-prefix uri)
+                              :request-method (keyword method)
+                              params-key params}))))
+                 commands)))))))
+
 
 ;; all GET's have Expires: 0 or Cache-Control: no-cache in the header (except configurations, external-documents and doctype)
 
