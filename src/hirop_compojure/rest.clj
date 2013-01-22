@@ -23,6 +23,23 @@
 
   (context "/contexts/:context-id" [context-id]
 
+           #_(ANY "/commands" req
+                (let [commands [{:method :get :uri "/documents"}] #_(get-in req [:json-params])
+                      uri-prefix (str "/contexts/" context-id)]
+                   (response (vec (map
+                                    (fn [command]
+                                      (hirop-routes
+                                       {:server-port 3000
+                                        :server-name "127.0.0.1"
+                                        :remote-addr "127.0.0.1"
+                                        :uri (str uri-prefix (:uri command))
+                                        :scheme :http
+                                        :headers {}
+                                        :request-method (keyword (:method command))}
+                                       );; use ring mock to build requests
+                                      )
+                                    commands)))))
+
            (DELETE "/" req
                    (->
                     (delete-context (get-store req) context-id)
