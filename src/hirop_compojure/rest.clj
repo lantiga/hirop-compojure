@@ -10,15 +10,17 @@
 (defn- get-store [req]
   (get-in req [:hirop :store]))
 
+(defn- init-context
+  [context-name external-ids store]
+  (let [{contexts :contexts doctypes :doctypes meta :meta backend :backend} (*get-hirop-conf*)]
+    (put-context
+     store
+     (init-context (keyword context-name) (get contexts context-name) doctypes external-ids meta backend))))
+
 (defroutes hirop-routes
 
-  (POST "/contexts" req
-        (let [context-name (keyword (get-in req [:params :context-name]))
-              external-ids (get-in req [:params :external-ids])
-              {contexts :contexts doctypes :doctypes meta :meta backend :backend} (*get-hirop-conf*)
-              context-id
-              (put-context (get-store req)
-                           (init-context context-name (get contexts context-name) doctypes external-ids meta backend))]
+  (POST "/contexts" {{context-name :context-name external-ids :external-ids} :json-params}
+        (let [context-id (init-context context-name external-ids (get-store req))]
           (response {:context-id context-id})))
 
   (context "/contexts/:context-id" [context-id]
@@ -195,22 +197,30 @@
                             (response nil)))))
 
 
+(defn- perform-commands
+  [context-id commands]
+  (let [uri-prefix (str "/contexts/" context-id)]
+    (vec (map
+          (fn [[method uri params]]
+            (let [params-key (if (= :get (keyword method))
+                               :query-params :json-params)]
+              (hirop-routes
+               (merge req
+                      {:uri (str uri-prefix uri)
+                       :request-method (keyword method)
+                       params-key params}))))
+          commands))))
+
+
 (defroutes commands-route
-  (context "/contexts/:context-id" [context-id]
-   (POST "/commands" req
-        (let [commands (get-in req [:json-params])
-              uri-prefix (str "/contexts/" context-id)]
-          (response
-           (vec (map
-                 (fn [[method uri params]]
-                   (let [params-key (if (= :get (keyword method))
-                                      :query-params :json-params)]
-                     (hirop-routes
-                      (merge req
-                             {:uri (str uri-prefix uri)
-                              :request-method (keyword method)
-                              params-key params}))))
-                 commands)))))))
+  (POST "/contexts/:context-id/commands" {{context-id :context-id} :params {commands :commands} :json-params}
+        (let [responses (perform-commands context-id commands)]
+          (response {:responses responses})))
+
+  (POST "/contexts/commands" {{context-name :context-name external-ids :external-ids commands :commands} :json-params}
+        (let [context-id (init-context context-name external-ids (get-store req))
+              responses (perform-commands context-id commands)]
+          (response {:context-id context-id :responses responses}))))
 
 
 ;; all GET's have Expires: 0 or Cache-Control: no-cache in the header (except configurations, external-documents and doctype)
