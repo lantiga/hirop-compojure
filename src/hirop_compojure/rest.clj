@@ -198,7 +198,7 @@
 
 
 (defn- perform-commands
-  [context-id commands]
+  [context-id commands req]
   (let [uri-prefix (str "/contexts/" context-id)]
     (vec (map
           (fn [[method uri params]]
@@ -213,13 +213,13 @@
 
 
 (defroutes commands-route
-  (POST "/contexts/:context-id/commands" {{context-id :context-id} :params {commands :commands} :json-params}
-        (let [responses (perform-commands context-id commands)]
+  (POST "/contexts/:context-id/commands" {{context-id :context-id} :params {commands :commands} :json-params :as req}
+        (let [responses (perform-commands context-id commands req)]
           (response {:responses responses})))
 
   (POST "/contexts/commands" {{context-name :context-name external-ids :external-ids commands :commands} :json-params :as req}
         (let [context-id (init-context-in-store context-name external-ids (get-store req))
-              responses (perform-commands context-id commands)]
+              responses (perform-commands context-id commands req)]
           (response {:context-id context-id :responses responses}))))
 
 
