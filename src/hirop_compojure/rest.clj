@@ -10,7 +10,7 @@
 (defn- get-store [req]
   (get-in req [:hirop :store]))
 
-(defn- init-context
+(defn- init-context-in-store
   [context-name external-ids store]
   (let [{contexts :contexts doctypes :doctypes meta :meta backend :backend} (*get-hirop-conf*)]
     (put-context
@@ -20,7 +20,7 @@
 (defroutes hirop-routes
 
   (POST "/contexts" {{context-name :context-name external-ids :external-ids} :json-params}
-        (let [context-id (init-context context-name external-ids (get-store req))]
+        (let [context-id (init-context-in-store context-name external-ids (get-store req))]
           (response {:context-id context-id})))
 
   (context "/contexts/:context-id" [context-id]
@@ -218,7 +218,7 @@
           (response {:responses responses})))
 
   (POST "/contexts/commands" {{context-name :context-name external-ids :external-ids commands :commands} :json-params}
-        (let [context-id (init-context context-name external-ids (get-store req))
+        (let [context-id (init-context-in-store context-name external-ids (get-store req))
               responses (perform-commands context-id commands)]
           (response {:context-id context-id :responses responses}))))
 
