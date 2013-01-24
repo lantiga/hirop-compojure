@@ -19,7 +19,7 @@
 
 (defroutes hirop-routes
 
-  (POST "/contexts" {{context-name :context-name external-ids :external-ids} :json-params}
+  (POST "/contexts" {{context-name :context-name external-ids :external-ids} :json-params :as req}
         (let [context-id (init-context-in-store context-name external-ids (get-store req))]
           (response {:context-id context-id})))
 
@@ -217,7 +217,7 @@
         (let [responses (perform-commands context-id commands)]
           (response {:responses responses})))
 
-  (POST "/contexts/commands" {{context-name :context-name external-ids :external-ids commands :commands} :json-params}
+  (POST "/contexts/commands" {{context-name :context-name external-ids :external-ids commands :commands} :json-params :as req}
         (let [context-id (init-context-in-store context-name external-ids (get-store req))
               responses (perform-commands context-id commands)]
           (response {:context-id context-id :responses responses}))))
