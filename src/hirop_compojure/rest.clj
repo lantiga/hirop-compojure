@@ -56,29 +56,19 @@
                  (get :external-ids)
                  response))
 
-           (GET "/configurations" req
-                (->
-                 (get-context (get-store req) context-id)
-                 (get :configurations)
-                 response))
-
-           (GET "/configurations/:doctype" [doctype :as req]
-                (->
-                 (get-context (get-store req) context-id)
-                 (get-in [:configurations (keyword doctype)])
-                 response))
-
            (GET "/doctypes" req
-                (->
-                 (get-context (get-store req) context-id)
-                 (get :doctypes)
-                 response))
+                (let [context (get-context (get-store req) context-id)]
+                  (->>
+                    (map #([% (get-doctype context %)] (keys (get context :doctypes)))
+                    (into {})
+                    response))))
 
            (GET "/doctypes/:doctype" [doctype :as req]
-                (->
-                 (get-context (get-store req) context-id)
-                 (get-in [:doctypes (keyword doctype)])
-                 response))
+                (let [context (get-context (get-store req) context-id)]
+                  (->>
+                    (get-in context [:doctypes (keyword doctype)])
+                    (get-doctype context)
+                    response)))
 
            (GET "/current/:doc-id" [doc-id :as req]
                 (->
