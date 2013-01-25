@@ -64,11 +64,10 @@
                     response)))
 
            (GET "/doctypes/:doctype" [doctype :as req]
-                (let [context (get-context (get-store req) context-id)]
-                  (->>
-                    (get-in context [:doctypes (keyword doctype)])
-                    (get-doctype context)
-                    response)))
+                (->
+                 (get-context (get-store req) context-id)
+                 (get-doctype doctype)
+                 response))
 
            (GET "/current/:doc-id" [doc-id :as req]
                 (->
