@@ -59,7 +59,7 @@
            (GET "/doctypes" req
                 (let [context (get-context (get-store req) context-id)]
                   (->>
-                    (map #([% (get-doctype context %)]) (keys (get context :doctypes)))
+                    (map (fn [doctype] [doctype (get-doctype context doctype)]) (keys (get context :doctypes)))
                     (into {})
                     response)))
 
