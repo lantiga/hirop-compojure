@@ -15,12 +15,12 @@
   (let [{contexts :contexts doctypes :doctypes meta :meta backend :backend} (*get-hirop-conf*)]
     (put-context
      store
-     (init-context (keyword context-name) (get contexts context-name) doctypes external-ids meta backend))))
+     (init-context context-name (get contexts context-name) doctypes external-ids meta backend))))
 
 (defroutes hirop-routes
 
-  (POST "/contexts" {{context-name :context-name external-ids :external-ids} :json-params :as req}
-        (let [context-id (init-context-in-store context-name external-ids (get-store req))]
+  (POST "/contexts" {{context-name :context-name external-ids :external-ids} :params :as req}
+        (let [context-id (init-context-in-store (keyword context-name) external-ids (get-store req))]
           (response {:context-id context-id})))
 
   (context "/contexts/:context-id" [context-id]
@@ -59,14 +59,14 @@
            (GET "/doctypes" req
                 (let [context (get-context (get-store req) context-id)]
                   (->>
-                    (map (fn [doctype] [doctype (get-doctype context doctype)]) (keys (get context :doctypes)))
-                    (into {})
-                    response)))
+                   (map (fn [doctype] [doctype (get-doctype context (keyword doctype))]) (keys (get context :doctypes)))
+                   (into {})
+                   response)))
 
            (GET "/doctypes/:doctype" [doctype :as req]
                 (->
                  (get-context (get-store req) context-id)
-                 (get-doctype doctype)
+                 (get-doctype (keyword doctype))
                  response))
 
            (GET "/current/:doc-id" [doc-id :as req]
@@ -191,23 +191,21 @@
   (let [uri-prefix (str "/contexts/" context-id)]
     (vec (map
           (fn [[method uri params]]
-            (let [params-key (if (= :get (keyword method))
-                               :query-params :json-params)]
-              (hirop-routes
-               (merge req
-                      {:uri (str uri-prefix uri)
-                       :request-method (keyword method)
-                       params-key params}))))
+            (hirop-routes
+             (merge req
+                    {:uri (str uri-prefix uri)
+                     :request-method (keyword method)
+                     :params params})))
           commands))))
 
 
 (defroutes commands-route
-  (POST "/contexts/:context-id/commands" {{context-id :context-id} :params {commands :commands} :json-params :as req}
+  (POST "/contexts/:context-id/commands" {{context-id :context-id commands :commands} :params :as req}
         (let [responses (perform-commands context-id commands req)]
           (response {:responses responses})))
 
-  (POST "/contexts/commands" {{context-name :context-name external-ids :external-ids commands :commands} :json-params :as req}
-        (let [context-id (init-context-in-store context-name external-ids (get-store req))
+  (POST "/contexts/commands" {{context-name :context-name external-ids :external-ids commands :commands} :params :as req}
+        (let [context-id (init-context-in-store (keyword context-name) external-ids (get-store req))
               responses (perform-commands context-id commands req)]
           (response {:context-id context-id :responses responses}))))
 
