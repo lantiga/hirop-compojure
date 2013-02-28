@@ -1,6 +1,6 @@
 (defproject hirop-compojure "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "REST frontend for hirop"
+  :url "https://github.com/orobix/hirop-compojure"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
