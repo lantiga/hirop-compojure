@@ -6,4 +6,6 @@
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [compojure "1.1.5"]
                  [ring-mock "0.1.3"]
-                 [hirop "0.1.0-SNAPSHOT"]])
+                 [cheshire "4.0.2"]
+                 [hirop "0.1.0-SNAPSHOT"]]
+  :profiles {:dev {:dependencies [[ring/ring-json "0.1.2"]]}})

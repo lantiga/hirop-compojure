@@ -3,7 +3,9 @@
         hirop.core
         hirop.protocols
         [ring.util.response :only [response status]])
-  (:require [hirop.backend :as backend]))
+  (:require [hirop.backend :as backend]
+            [ring.mock.request :as mock]
+            [cheshire.core :as json]))
 
 (def ^:dynamic *get-hirop-conf*)
 
@@ -185,27 +187,40 @@
                             (update-context (get-store req) context-id #(unselect % (keyword selection-id) (keyword doctype)))
                             (response nil)))))
 
+(defn- command-request
+  [method uri params store]
+  (->
+   (condp = method
+     :get (mock/request method uri)
+     (->
+      (mock/request method uri)
+      (mock/body (json/generate-string params))
+      (mock/content-type "application/json")))
+   (assoc-in [:hirop :store] store)))
 
 (defn- perform-commands
   [context-id commands req]
   (let [uri-prefix (str "/contexts/" context-id)]
     (vec (map
           (fn [[method uri params]]
-            (hirop-routes
-             (merge req
-                    {:uri (str uri-prefix uri)
-                     :request-method (keyword method)
-                     :params params})))
+            (let [method (keyword method)
+                  uri (str uri-prefix uri)]
+              (->
+               (command-request method uri params (get-store req))
+               (hirop-routes)
+               :body)))
           commands))))
 
 
-(defroutes commands-route
-  (POST "/contexts/:context-id/commands" {{context-id :context-id commands :commands} :params :as req}
-        (let [responses (perform-commands context-id commands req)]
+(defroutes commands-routes
+  (POST "/contexts/:context-id/commands" {{context-id :context-id} :params :as req}
+        (let [commands (get-in req [:json-params "commands"])
+              responses (perform-commands context-id commands req)]
           (response {:responses responses})))
 
-  (POST "/contexts/commands" {{context-name :context-name external-ids :external-ids commands :commands} :params :as req}
-        (let [context-id (init-context-in-store (keyword context-name) external-ids (get-store req))
+  (POST "/contexts/commands" {{context-name :context-name external-ids :external-ids} :params :as req}
+        (let [commands (get-in req [:json-params "commands"])
+              context-id (init-context-in-store (keyword context-name) external-ids (get-store req))
               responses (perform-commands context-id commands req)]
           (response {:context-id context-id :responses responses}))))
 
