@@ -13,6 +13,13 @@
   (:require [cheshire.core :as json]
             [compojure.handler :refer [api]]))
 
+(defn- json-request 
+  [method uri params]
+  (->
+    (request method uri)
+    (body (json/generate-string params))
+    (content-type "application/json")))
+
 (def doctypes
   {:Foo {:fields {:id {}}}
    :Bar {:fields {:title {}}}
