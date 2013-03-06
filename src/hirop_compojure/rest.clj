@@ -2,6 +2,7 @@
   (:use compojure.core
         hirop.core
         hirop.protocols
+        [clojure.walk :only [keywordize-keys]]
         [ring.util.response :only [response status]])
   (:require [hirop.backend :as backend]
             [ring.mock.request :as mock]
@@ -190,13 +191,9 @@
 (defn- command-request
   [method uri params store]
   (->
-   (condp = method
-     :get (mock/request method uri)
-     (->
-      (mock/request method uri)
-      (mock/body (json/generate-string params))
-      (mock/content-type "application/json")))
-   (assoc-in [:hirop :store] store)))
+    (mock/request method uri)
+    (update-in [:params] merge (keywordize-keys params))
+    (assoc-in [:hirop :store] store)))
 
 (defn- perform-commands
   [context-id commands req]
