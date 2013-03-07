@@ -72,6 +72,12 @@
                  (get-doctype (keyword doctype))
                  response))
 
+           (GET "/prototypes/:prototype" [prototype :as req]
+                (->
+                 (get-context (get-store req) context-id)
+                 (get-prototype-doctypes (keyword prototype))
+                 response))
+
            (GET "/current/:doc-id" [doc-id :as req]
                 (->
                  (get-context (get-store req) context-id)
