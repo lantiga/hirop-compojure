@@ -76,6 +76,7 @@
                 (->
                  (get-context (get-store req) context-id)
                  (get-prototype-doctypes (keyword prototype))
+                 vec
                  response))
 
            (GET "/current/:doc-id" [doc-id :as req]
