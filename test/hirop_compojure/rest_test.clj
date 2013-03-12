@@ -54,7 +54,7 @@
 
 (defmethod fetch :test
   [backend context]
-  (vec (vals docs)))
+  {:documents (vec (vals docs))})
 
 (defmethod save :test
   [backend context]
